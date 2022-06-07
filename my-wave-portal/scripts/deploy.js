@@ -7,6 +7,8 @@ const main = async () => {
 	const waveContract = await hre.ethers.getContractFactory("WavePortal");
 	const wavePortal = await waveContract.deploy();
   
+	// hardhat.config.jsを編集(metamaskの秘密鍵載せた)して, Rinkbyネットワークで実行したら
+	// アドレスはmetamaskのアカウントアドレスになってた
 	console.log("Deploying contracts with account: ", deployer.address);
 	console.log("Account balance: ", accountBalance.toString());
 	console.log("Contract deployed to: ", wavePortal.address);
