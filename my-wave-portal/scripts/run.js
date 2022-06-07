@@ -2,6 +2,10 @@
 
 // async/await, 逐次実行の実現のため
 const main = async () => {
+
+	// getSigners(): Hardhatが任意のアドレスを返す
+	const [owner, randomPerson] = await hre.ethers.getSigners();
+
 	// "WavePortal"コントラクトのコンパイル -> コントラクトに必要なファイルがartifactsディレクトリに生成される
 	// getContractFactory: デプロイライブラリのアドレスとWavePortalコントラクトを連携
 	// hre: hardhatが用意した全ての機能を含むオブジェクト, hardhat実行毎にHERにアクセスしているのでimport不要
@@ -13,9 +17,29 @@ const main = async () => {
 
 	// コントラクトがローカルブロックチェーン上にデプロイされるまで待つ
 	const wavePortal = await waveContract.deployed();
+
+	// wavePortal.address: デプロイ先のアドレス
+	console.log("Contract deployed to:", wavePortal.address);
+	// owner.address: デプロイした人のアドレス
+	console.log("Contract deployed by:", owner.address);
   
-	console.log("WavePortal address: ", wavePortal.address);
-  };
+	let waveCount;
+	waveCount = await waveContract.getTotalWaves();
+  
+	// wave()は書き込み処理があるのでガス代がかかる->ユーザは取引の確認が必要
+	// ->ユーザが新しいwaveを送ったことを承認するまでフロントエンド待機
+	let waveTxn = await waveContract.wave();
+	// トランザクション結果の取得
+	await waveTxn.wait();
+  
+	waveCount = await waveContract.getTotalWaves();
+
+	// 他ユーザがwaveを送った状態をシュミレート
+	waveTxn = await waveContract.connect(randomPerson).wave();
+	await waveTxn.wait();
+  
+	waveCount = await waveContract.getTotalWaves();
+};
   
   const runMain = async () => {
 	try {
