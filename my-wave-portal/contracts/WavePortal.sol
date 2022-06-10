@@ -10,22 +10,42 @@ import "hardhat/console.sol";
 
 // contract: like a class
 contract WavePortal {
-
     // 状態変数, WavePortalコントラクトのストレージに永続的保存
     uint256 totalWaves;
+    event NewWave(address indexed from, uint256 timestamp, string message);
+    struct Wave {
+        address waver; //「👋（wave）」を送ったユーザーのアドレス
+        string message; // ユーザーが送ったメッセージ
+        uint256 timestamp; // ユーザーが「👋（wave）」を送った瞬間のタイムスタンプ
+    }
+    // 構造体の配列を格納するための変数wavesを宣言。
+    // これで、ユーザーが送ってきたすべての「👋（wave）」を保持することができます。
+    Wave[] waves;
 
     constructor() {
-        console.log("Here is my first smart contract!");
-    } // 実行後コードがブロックチェーンにデプロイされる
+        console.log("WavePortal - Smart Contract!");
+    }
 
-    function wave() public {
+    // _messageという文字列を要求するようにwave関数を更新。
+    // _messageは、ユーザーがフロントエンドから送信するメッセージです。
+    function wave(string memory _message) public {
         totalWaves += 1;
-        console.log("%s has waved!", msg.sender);
+        console.log("%s waved w/ message %s", msg.sender, _message);
+        // 「👋（wave）」とメッセージを配列に格納。
+        waves.push(Wave(msg.sender, _message, block.timestamp));
+        // コントラクト側でemitされたイベントに関する通知をフロントエンドで取得できるようにする。
+        emit NewWave(msg.sender, block.timestamp, _message);
+    }
+
+    // 構造体配列のwavesを返してくれるgetAllWavesという関数を追加。
+    // これで、私たちのWEBアプリからwavesを取得することができます。
+    function getAllWaves() public view returns (Wave[] memory) {
+        return waves;
     }
 
     function getTotalWaves() public view returns (uint256) {
+        // コントラクトが出力する値をコンソールログで表示する。
         console.log("We have %d total waves!", totalWaves);
         return totalWaves;
     }
-
 }
