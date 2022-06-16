@@ -22,8 +22,9 @@ contract WavePortal {
     // これで、ユーザーが送ってきたすべての「👋（wave）」を保持することができます。
     Wave[] waves;
 
-    constructor() {
-        console.log("WavePortal - Smart Contract!");
+    // payable: 送金を許可する
+    constructor() payable {
+        console.log("We have been constructed!");
     }
 
     // _messageという文字列を要求するようにwave関数を更新。
@@ -35,6 +36,20 @@ contract WavePortal {
         waves.push(Wave(msg.sender, _message, block.timestamp));
         // コントラクト側でemitされたイベントに関する通知をフロントエンドで取得できるようにする。
         emit NewWave(msg.sender, block.timestamp, _message);
+        // 「👋（wave）」を送ってくれたユーザーに0.0001ETHを送る
+        uint256 prizeAmount = 0.0001 ether;
+        // require: if文, 第一引数がfalse -> トランザクションキャンセル(第二引数にエラー内容)
+        require(
+            //  address(this).balance: コントラクトが持つ残高
+            prizeAmount <= address(this).balance,
+            "Trying to withdraw more money than the contract has."
+        );
+        // ユーザに送金を行う
+        (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+        // トランザクションの成功の確認
+        // 成功: 送金
+        // 失敗: エラー文出力
+        require(success, "Failed to withdraw money from contract.");
     }
 
     // 構造体配列のwavesを返してくれるgetAllWavesという関数を追加。
