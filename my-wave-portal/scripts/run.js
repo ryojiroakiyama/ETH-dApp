@@ -20,11 +20,13 @@ const main = async () => {
     hre.ethers.utils.formatEther(contractBalance)
   );
 
-  // Waveし、トランザクションが完了するまで待機
-  let waveTxn = await waveContract.wave("A message!");
+  // 2回 waves を送るシミュレーションを行う
+  const waveTxn = await waveContract.wave("This is wave #1");
   await waveTxn.wait();
+  const waveTxn2 = await waveContract.wave("This is wave #2");
+  await waveTxn2.wait();
 
-  // Waveした後のコントラクトの残高を取得し、結果を出力（0.0001ETH引かれていることを確認）
+  // Waveした後のコントラクトの残高を取得し、結果を出力
   contractBalance = await hre.ethers.provider.getBalance(waveContract.address);
   console.log(
     "Contract balance:",
